@@ -2,6 +2,7 @@ package main
 
 import (
 	"./snapshot"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"log"
@@ -23,6 +24,7 @@ func main() {
 	// Convert `DAYS_OLD` value to an integer
 	daysOldValue, err := strconv.Atoi(getDays)
 	if err != nil {
+		fmt.Println(err)
 		log.Panicf("The type of the value you provided is %T. %v needs to be an integer", daysOldValue, daysOldValue)
 	}
 
@@ -39,17 +41,16 @@ func main() {
 		numberOfDays := time.Duration(daysOldValue)
 		days := time.Hour * 24 * numberOfDays
 
-		isSnapShotTwoWeeksOld, err := snapshot.CheckSnapShotAge(snapShot.StartTime, days)
+		isTwoWeeksOrOlder, err := snapshot.CheckSnapShotAge(snapShot.StartTime, days)
 		if err != nil {
 			log.Printf("Error while evaluating the snapshot's age %s: %s", snapShotID, err.Error())
 		}
 
-		if isSnapShotTwoWeeksOld != false {
-			_, err = snapshot.PruneSnapShots(connection, snapShotID)
+		if isTwoWeeksOrOlder != false {
+			_, err := snapshot.PruneSnapShots(connection, snapShotID)
 			if err != nil {
 				log.Printf("Error while pruning snapshot %s: %s", snapShotID, err.Error())
 			}
 		}
-
 	}
 }
