@@ -1,23 +1,53 @@
 package snapshot
 
 import (
+	"../caller"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"log"
 	"time"
 )
 
 func GetSnapShots(connection *ec2.EC2, key string, val string) (output *ec2.DescribeSnapshotsOutput, err error) {
 
-	snapShotInput := &ec2.DescribeSnapshotsInput{
-		Filters: []*ec2.Filter{
-			{
-				Name: aws.String(fmt.Sprintf("tag:%s", key)),
-				Values: []*string{
-					aws.String(val),
+	var snapShotInput *ec2.DescribeSnapshotsInput
+
+	// Get the owner ID a.k.a the aws account number
+	callerResult, callerErr := caller.GetCaller()
+	if callerErr != nil {
+		log.Panic(callerErr)
+	}
+	ownerID := *callerResult.Account
+
+	if len(key) != 0 && len(val) != 0 {
+		snapShotInput = &ec2.DescribeSnapshotsInput{
+			Filters: []*ec2.Filter{
+				{
+					Name: aws.String(fmt.Sprintf("tag:%s", key)),
+					Values: []*string{
+						aws.String(val),
+					},
+				},
+				{
+					Name: aws.String("owner-id"),
+					Values: []*string{
+						aws.String(ownerID),
+					},
 				},
 			},
-		},
+		}
+	} else {
+		snapShotInput = &ec2.DescribeSnapshotsInput{
+			Filters: []*ec2.Filter{
+				{
+					Name: aws.String("owner-id"),
+					Values: []*string{
+						aws.String(ownerID),
+					},
+				},
+			},
+		}
 	}
 
 	output, err = connection.DescribeSnapshots(snapShotInput)
