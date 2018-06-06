@@ -35,21 +35,14 @@ func main() {
 
 	for _, snapShot := range snapShots.Snapshots {
 
-		snapShotID := *snapShot.SnapshotId
-
 		// Cast integer to type Duration
 		numberOfDays := time.Duration(daysOldValue)
 		days := time.Hour * 24 * numberOfDays
 
-		isTwoWeeksOrOlder, err := snapshot.CheckSnapShotAge(snapShot.StartTime, days)
-		if err != nil {
-			log.Printf("Error while evaluating the snapshot's age %s: %s", snapShotID, err.Error())
-		}
-
-		if isTwoWeeksOrOlder != false {
-			_, err := snapshot.PruneSnapShots(connection, snapShotID)
+		if snapshot.OlderThan(snapShot.StartTime, days) {
+			_, err := snapshot.PruneSnapShots(connection, *snapShot.SnapshotId)
 			if err != nil {
-				log.Printf("Error while pruning snapshot %s: %s", snapShotID, err.Error())
+				log.Printf("Error while pruning snapshot %s: %s", *snapShot.SnapshotId, err)
 			}
 		}
 	}
