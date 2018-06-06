@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./snapshot"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/djsd123/delete-ec2-ebs-snapshots/snapshot"
 	"log"
 	"os"
 	"strconv"
@@ -25,7 +25,7 @@ func main() {
 	daysOldValue, err := strconv.Atoi(getDays)
 	if err != nil {
 		fmt.Println(err)
-		log.Panicf("The type of the value you provided is %T. %v needs to be an integer", daysOldValue, daysOldValue)
+		log.Panicf("Failed to parse DAYS_OLD, must be an integer: %s", err)
 	}
 
 	snapShots, err := snapshot.GetSnapShots(connection, snapShotKeyFilter, snapShotValueFilter)
