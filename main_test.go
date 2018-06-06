@@ -1,11 +1,10 @@
 package main_test
 
 import (
-	"testing"
-	"strconv"
 	"reflect"
+	"strconv"
+	"testing"
 )
-
 
 func TestTypeOfValues(t *testing.T) {
 
